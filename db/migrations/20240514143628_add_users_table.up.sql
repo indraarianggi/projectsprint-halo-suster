@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255),
     identity_image_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    deleted_at TIMESTAMP NULL
 );
 
 CREATE INDEX idx_users_id ON users(id);

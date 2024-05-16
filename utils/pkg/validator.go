@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/backend-magang/halo-suster/utils/constant"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -22,6 +23,7 @@ func SetupValidator() *validator.Validate {
 	v := validator.New()
 
 	v.RegisterValidation("nip", validateNIP)
+	v.RegisterValidation("image_url", validateImageURL)
 
 	return v
 }
@@ -74,8 +76,10 @@ func validateNIP(fl validator.FieldLevel) bool {
 	}
 
 	// validate role
-	if (role == "it" && roleCode == 303) || (role == "nurse" && roleCode == 615) {
-		return false
+	if role != "" {
+		if (role == constant.ROLE_IT && roleCode == constant.ROLE_CODE_NURSE) || (role == constant.ROLE_NURSE && roleCode == constant.ROLE_CODE_IT) {
+			return false
+		}
 	}
 
 	// validate year
@@ -96,4 +100,14 @@ func validateNIP(fl validator.FieldLevel) bool {
 
 	// if all checks pass, return true
 	return true
+}
+
+func validateImageURL(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+
+	pattern := `^https?://(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:/[^/?#]+)+\.(?:jpg|jpeg|png|gif|bmp)(?:\?[^\s]*)?$`
+
+	re := regexp.MustCompile(pattern)
+
+	return re.MatchString(value)
 }

@@ -1,8 +1,11 @@
 package models
 
-type UserWithToken struct {
-	ID    string `json:"userId"`
-	NIP   int    `json:"nip"`
-	Name  string `json:"name"`
-	Token string `json:"accessToken"`
+import "time"
+
+type UserClaims struct {
+	ID        string    `json:"id"`
+	NIP       int64     `json:"nip"`
+	Name      string    `json:"name"`
+	Role      string    `json:"role"`
+	ExpiredAt time.Time `json:"expiredAt"`
 }
