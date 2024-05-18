@@ -25,6 +25,9 @@ type Usecase interface {
 	RegisterNurse(context.Context, RegisterNurseRequest) helper.StandardResponse
 	LoginNurse(context.Context, LoginRequest) helper.StandardResponse
 	SetPasswordNurse(context.Context, NurseAccessRequest) helper.StandardResponse
+	UpdateNurse(context.Context, UpdateNurseRequest) helper.StandardResponse
+	DeleteNurse(context.Context, DeleteNurseRequest) helper.StandardResponse
+	GetListUser(context.Context, GetListUserRequest) helper.StandardResponse
 }
 
 type usecase struct {
@@ -223,7 +226,7 @@ func (u *usecase) SetPasswordNurse(ctx context.Context, request NurseAccessReque
 	if err != nil {
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
 	} else if userRoleCode != constant.ROLE_CODE_NURSE {
-		return helper.StandardResponse{Code: http.StatusBadRequest, Message: constant.NOT_NURSE}
+		return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND}
 	}
 
 	// generate hashed password
@@ -241,4 +244,116 @@ func (u *usecase) SetPasswordNurse(ctx context.Context, request NurseAccessReque
 	}
 
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS, Data: nil}
+}
+
+func (u *usecase) UpdateNurse(ctx context.Context, request UpdateNurseRequest) helper.StandardResponse {
+	var (
+		updatedUser  models.User
+		user         models.User
+		dataResponse models.User
+		err          error
+		now          = time.Now()
+	)
+
+	// check request.NIP, must be 303 (nurse)
+	requestNIPStr := strconv.FormatInt(request.NIP, 10)
+	requestRoleCode, err := strconv.Atoi(requestNIPStr[:3])
+	if err != nil {
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	} else if requestRoleCode != constant.ROLE_CODE_NURSE {
+		return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.INVALID_NIP}
+	}
+
+	// find user by id
+	user, err = u.repository.FindUserByID(ctx, request.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND, Error: err}
+		}
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	}
+
+	// check user role code, must be 303 (nurse)
+	userNIPStr := strconv.FormatInt(user.NIP, 10)
+	userRoleCode, err := strconv.Atoi(userNIPStr[:3])
+	if err != nil {
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	} else if userRoleCode != constant.ROLE_CODE_NURSE {
+		return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND}
+	}
+
+	updatedUser = models.User{
+		ID:               request.ID,
+		NIP:              request.NIP,
+		Name:             request.Name,
+		Role:             user.Role,
+		Password:         user.Password,
+		IdentityImageUrl: user.IdentityImageUrl,
+		UpdatedAt:        now,
+	}
+
+	// update user data in database
+	user, err = u.repository.UpdateUser(ctx, updatedUser)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND, Error: err}
+		} else if strings.Contains(err.Error(), lib.ErrConstraintKey.Error()) {
+			return helper.StandardResponse{Code: http.StatusConflict, Message: constant.DUPLICATE_NIP, Error: err}
+		}
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	}
+
+	dataResponse = models.User{
+		ID:        user.ID,
+		NIP:       user.NIP,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt,
+	}
+
+	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS_UPDATE_USER, Data: dataResponse}
+}
+
+func (u *usecase) DeleteNurse(ctx context.Context, request DeleteNurseRequest) helper.StandardResponse {
+	// find user by id
+	user, err := u.repository.FindUserByID(ctx, request.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND, Error: err}
+		}
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	}
+
+	// check user role code, must be 303 (nurse)
+	userNIPStr := strconv.FormatInt(user.NIP, 10)
+	userRoleCode, err := strconv.Atoi(userNIPStr[:3])
+	if err != nil {
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	} else if userRoleCode != constant.ROLE_CODE_NURSE {
+		return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND}
+	}
+
+	// delete user
+	err = u.repository.DeleteUser(ctx, request.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND, Error: err}
+		}
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
+	}
+
+	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS, Data: nil}
+}
+
+func (u *usecase) GetListUser(ctx context.Context, request GetListUserRequest) helper.StandardResponse {
+	var (
+		users []models.User
+		err   error
+	)
+
+	users, err = u.repository.FindUser(ctx, request)
+	if err != nil {
+		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED_GET_USERS, Error: err}
+	}
+
+	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS, Data: users}
 }

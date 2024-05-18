@@ -48,7 +48,7 @@ func validateNIP(fl validator.FieldLevel) bool {
 	role := fl.Param()
 
 	// check if the input matches the general pattern
-	pattern := `^(615|303)[12]\d{6}\d{3}$`
+	pattern := `^(615|303)[12]\d{6}\d{3,5}$`
 	match, _ := regexp.MatchString(pattern, valueString)
 	if !match {
 		return false
@@ -94,7 +94,7 @@ func validateNIP(fl validator.FieldLevel) bool {
 	}
 
 	// validate the random digits (although regex already covers this)
-	if randomDigits < 0 || randomDigits > 999 {
+	if randomDigits < 0 || randomDigits > 99999 {
 		return false
 	}
 

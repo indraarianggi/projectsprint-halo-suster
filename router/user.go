@@ -13,10 +13,14 @@ func InitUserRouter(e *echo.Echo, handler user.Handler) {
 	it := user.Group("/it")
 	nurse := user.Group("/nurse")
 
+	user.GET("", handler.GetListUser, middleware.TokenValidation(constant.ROLE_IT))
+
 	it.POST("/register", handler.RegisterIT)
 	it.POST("/login", handler.LoginIT)
 
 	nurse.POST("/login", handler.LoginNurse)
 	nurse.POST("/register", handler.RegisterNurse, middleware.TokenValidation(constant.ROLE_IT))
 	nurse.POST("/:id/access", handler.SetPasswordNurse, middleware.TokenValidation(constant.ROLE_IT))
+	nurse.PUT("/:id", handler.UpdateNurse, middleware.TokenValidation(constant.ROLE_IT))
+	nurse.DELETE("/:id", handler.DeleteNurse, middleware.TokenValidation(constant.ROLE_IT))
 }
