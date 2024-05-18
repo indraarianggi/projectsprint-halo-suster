@@ -1,13 +1,13 @@
 package router
 
 import (
+	"github.com/backend-magang/halo-suster/internal/handler"
 	"github.com/backend-magang/halo-suster/middleware"
-	"github.com/backend-magang/halo-suster/user"
 	"github.com/backend-magang/halo-suster/utils/constant"
 	"github.com/labstack/echo/v4"
 )
 
-func InitUserRouter(e *echo.Echo, handler user.Handler) {
+func InitUserRouter(e *echo.Echo, handler handler.Handler) {
 	v1 := e.Group("/v1")
 	user := v1.Group("/user")
 	it := user.Group("/it")

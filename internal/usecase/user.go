@@ -1,4 +1,4 @@
-package user
+package usecase
 
 import (
 	"context"
@@ -8,43 +8,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/backend-magang/halo-suster/config"
 	"github.com/backend-magang/halo-suster/middleware"
-	"github.com/backend-magang/halo-suster/models"
+	"github.com/backend-magang/halo-suster/models/entity"
+	"github.com/backend-magang/halo-suster/models/input"
 	"github.com/backend-magang/halo-suster/utils/constant"
 	"github.com/backend-magang/halo-suster/utils/helper"
 	"github.com/backend-magang/halo-suster/utils/lib"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Usecase interface {
-	RegisterIT(context.Context, RegisterITRequest) helper.StandardResponse
-	LoginIT(context.Context, LoginRequest) helper.StandardResponse
-	RegisterNurse(context.Context, RegisterNurseRequest) helper.StandardResponse
-	LoginNurse(context.Context, LoginRequest) helper.StandardResponse
-	SetPasswordNurse(context.Context, NurseAccessRequest) helper.StandardResponse
-	UpdateNurse(context.Context, UpdateNurseRequest) helper.StandardResponse
-	DeleteNurse(context.Context, DeleteNurseRequest) helper.StandardResponse
-	GetListUser(context.Context, GetListUserRequest) helper.StandardResponse
-}
-
-type usecase struct {
-	repository Repository
-	config     config.Config
-	logger     *logrus.Logger
-}
-
-func NewUsecase(repository Repository, config config.Config, logger *logrus.Logger) Usecase {
-	return &usecase{repository, config, logger}
-}
-
-func (u *usecase) RegisterIT(ctx context.Context, request RegisterITRequest) helper.StandardResponse {
+func (u *usecase) RegisterIT(ctx context.Context, request input.RegisterITRequest) helper.StandardResponse {
 	var (
-		newUser      models.User
-		user         models.User
-		dataResponse models.UserWithToken
+		newUser      entity.User
+		user         entity.User
+		dataResponse entity.UserWithToken
 		token        string
 		err          error
 		now          = time.Now()
@@ -52,7 +30,7 @@ func (u *usecase) RegisterIT(ctx context.Context, request RegisterITRequest) hel
 
 	// generate hashed password
 	hashedPassword := helper.HashPassword(request.Password, cast.ToInt(u.config.BcryptSalt))
-	newUser = models.User{
+	newUser = entity.User{
 		ID:       helper.NewULID(),
 		NIP:      request.NIP,
 		Name:     request.Name,
@@ -64,7 +42,7 @@ func (u *usecase) RegisterIT(ctx context.Context, request RegisterITRequest) hel
 	}
 
 	// save new user to database
-	user, err = u.repository.Save(ctx, newUser)
+	user, err = u.repository.SaveUser(ctx, newUser)
 	if err != nil {
 		if strings.Contains(err.Error(), lib.ErrConstraintKey.Error()) {
 			return helper.StandardResponse{Code: http.StatusConflict, Message: constant.DUPLICATE_NIP, Error: err}
@@ -74,7 +52,7 @@ func (u *usecase) RegisterIT(ctx context.Context, request RegisterITRequest) hel
 
 	// generate token
 	token, _ = middleware.GenerateToken(user)
-	dataResponse = models.UserWithToken{
+	dataResponse = entity.UserWithToken{
 		ID:    user.ID,
 		NIP:   user.NIP,
 		Name:  user.Name,
@@ -84,10 +62,10 @@ func (u *usecase) RegisterIT(ctx context.Context, request RegisterITRequest) hel
 	return helper.StandardResponse{Code: http.StatusCreated, Message: constant.SUCCESS_REGISTER_USER, Data: dataResponse}
 }
 
-func (u *usecase) LoginIT(ctx context.Context, request LoginRequest) helper.StandardResponse {
+func (u *usecase) LoginIT(ctx context.Context, request input.LoginRequest) helper.StandardResponse {
 	var (
-		user         models.User
-		dataResponse models.UserWithToken
+		user         entity.User
+		dataResponse entity.UserWithToken
 		token        string
 		err          error
 	)
@@ -118,7 +96,7 @@ func (u *usecase) LoginIT(ctx context.Context, request LoginRequest) helper.Stan
 
 	// generate token
 	token, _ = middleware.GenerateToken(user)
-	dataResponse = models.UserWithToken{
+	dataResponse = entity.UserWithToken{
 		ID:    user.ID,
 		NIP:   user.NIP,
 		Name:  user.Name,
@@ -128,10 +106,10 @@ func (u *usecase) LoginIT(ctx context.Context, request LoginRequest) helper.Stan
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS_LOGIN, Data: dataResponse}
 }
 
-func (u *usecase) LoginNurse(ctx context.Context, request LoginRequest) helper.StandardResponse {
+func (u *usecase) LoginNurse(ctx context.Context, request input.LoginRequest) helper.StandardResponse {
 	var (
-		user         models.User
-		dataResponse models.UserWithToken
+		user         entity.User
+		dataResponse entity.UserWithToken
 		token        string
 		err          error
 	)
@@ -162,7 +140,7 @@ func (u *usecase) LoginNurse(ctx context.Context, request LoginRequest) helper.S
 
 	// generate token
 	token, _ = middleware.GenerateToken(user)
-	dataResponse = models.UserWithToken{
+	dataResponse = entity.UserWithToken{
 		ID:    user.ID,
 		NIP:   user.NIP,
 		Name:  user.Name,
@@ -172,16 +150,16 @@ func (u *usecase) LoginNurse(ctx context.Context, request LoginRequest) helper.S
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS_LOGIN, Data: dataResponse}
 }
 
-func (u *usecase) RegisterNurse(ctx context.Context, request RegisterNurseRequest) helper.StandardResponse {
+func (u *usecase) RegisterNurse(ctx context.Context, request input.RegisterNurseRequest) helper.StandardResponse {
 	var (
-		newUser      models.User
-		user         models.User
-		dataResponse models.User
+		newUser      entity.User
+		user         entity.User
+		dataResponse entity.User
 		err          error
 		now          = time.Now()
 	)
 
-	newUser = models.User{
+	newUser = entity.User{
 		ID:               helper.NewULID(),
 		NIP:              request.NIP,
 		Name:             request.Name,
@@ -192,7 +170,7 @@ func (u *usecase) RegisterNurse(ctx context.Context, request RegisterNurseReques
 	}
 
 	// save new user to database
-	user, err = u.repository.Save(ctx, newUser)
+	user, err = u.repository.SaveUser(ctx, newUser)
 	if err != nil {
 		if strings.Contains(err.Error(), lib.ErrConstraintKey.Error()) {
 			return helper.StandardResponse{Code: http.StatusConflict, Message: constant.DUPLICATE_NIP, Error: err}
@@ -200,7 +178,7 @@ func (u *usecase) RegisterNurse(ctx context.Context, request RegisterNurseReques
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
 	}
 
-	dataResponse = models.User{
+	dataResponse = entity.User{
 		ID:        user.ID,
 		NIP:       user.NIP,
 		Name:      user.Name,
@@ -210,7 +188,7 @@ func (u *usecase) RegisterNurse(ctx context.Context, request RegisterNurseReques
 	return helper.StandardResponse{Code: http.StatusCreated, Message: constant.SUCCESS_REGISTER_USER, Data: dataResponse}
 }
 
-func (u *usecase) SetPasswordNurse(ctx context.Context, request NurseAccessRequest) helper.StandardResponse {
+func (u *usecase) SetPasswordNurse(ctx context.Context, request input.NurseAccessRequest) helper.StandardResponse {
 	// find user by id
 	user, err := u.repository.FindUserByID(ctx, request.ID)
 	if err != nil {
@@ -246,11 +224,11 @@ func (u *usecase) SetPasswordNurse(ctx context.Context, request NurseAccessReque
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS, Data: nil}
 }
 
-func (u *usecase) UpdateNurse(ctx context.Context, request UpdateNurseRequest) helper.StandardResponse {
+func (u *usecase) UpdateNurse(ctx context.Context, request input.UpdateNurseRequest) helper.StandardResponse {
 	var (
-		updatedUser  models.User
-		user         models.User
-		dataResponse models.User
+		updatedUser  entity.User
+		user         entity.User
+		dataResponse entity.User
 		err          error
 		now          = time.Now()
 	)
@@ -282,7 +260,7 @@ func (u *usecase) UpdateNurse(ctx context.Context, request UpdateNurseRequest) h
 		return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.USER_NOT_FOUND}
 	}
 
-	updatedUser = models.User{
+	updatedUser = entity.User{
 		ID:               request.ID,
 		NIP:              request.NIP,
 		Name:             request.Name,
@@ -303,7 +281,7 @@ func (u *usecase) UpdateNurse(ctx context.Context, request UpdateNurseRequest) h
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
 	}
 
-	dataResponse = models.User{
+	dataResponse = entity.User{
 		ID:        user.ID,
 		NIP:       user.NIP,
 		Name:      user.Name,
@@ -313,7 +291,7 @@ func (u *usecase) UpdateNurse(ctx context.Context, request UpdateNurseRequest) h
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS_UPDATE_USER, Data: dataResponse}
 }
 
-func (u *usecase) DeleteNurse(ctx context.Context, request DeleteNurseRequest) helper.StandardResponse {
+func (u *usecase) DeleteNurse(ctx context.Context, request input.DeleteNurseRequest) helper.StandardResponse {
 	// find user by id
 	user, err := u.repository.FindUserByID(ctx, request.ID)
 	if err != nil {
@@ -344,9 +322,9 @@ func (u *usecase) DeleteNurse(ctx context.Context, request DeleteNurseRequest) h
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS, Data: nil}
 }
 
-func (u *usecase) GetListUser(ctx context.Context, request GetListUserRequest) helper.StandardResponse {
+func (u *usecase) GetListUser(ctx context.Context, request input.GetListUserRequest) helper.StandardResponse {
 	var (
-		users []models.User
+		users []entity.User
 		err   error
 	)
 

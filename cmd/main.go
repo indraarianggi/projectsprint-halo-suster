@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/backend-magang/halo-suster/config"
 	"github.com/backend-magang/halo-suster/driver"
+	"github.com/backend-magang/halo-suster/internal/handler"
+	"github.com/backend-magang/halo-suster/internal/repository"
+	"github.com/backend-magang/halo-suster/internal/usecase"
 	"github.com/backend-magang/halo-suster/middleware"
-	"github.com/backend-magang/halo-suster/patient"
 	"github.com/backend-magang/halo-suster/router"
-	"github.com/backend-magang/halo-suster/user"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -22,18 +23,11 @@ func main() {
 
 	middleware.InitMiddleware(server)
 
-	userRepository := user.NewRepository(dbClient, config, logger)
-	userUsecase := user.NewUsecase(userRepository, config, logger)
-	userHandler := user.NewHandler(userUsecase, logger)
+	repository := repository.NewRepository(dbClient, config, logger)
+	usecase := usecase.NewUsecase(repository, config, logger)
+	handler := handler.NewHandler(usecase, logger)
 
-	patientRepository := patient.NewRepository(dbClient, config, logger)
-	patientUsecase := patient.NewUsecase(patientRepository, config, logger)
-	patientHandler := patient.NewHandler(patientUsecase, logger)
-
-	router.InitRouter(server, router.RouterHandler{
-		UserHandler:    userHandler,
-		PatientHandler: patientHandler,
-	})
+	router.InitRouter(server, handler)
 
 	server.Start(":8080")
 }

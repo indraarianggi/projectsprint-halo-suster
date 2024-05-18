@@ -1,40 +1,20 @@
-package user
+package handler
 
 import (
 	"net/http"
 
+	"github.com/backend-magang/halo-suster/models/input"
 	"github.com/backend-magang/halo-suster/utils/helper"
 	"github.com/backend-magang/halo-suster/utils/pkg"
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
 )
-
-type Handler interface {
-	RegisterIT(echo.Context) error
-	LoginIT(echo.Context) error
-	RegisterNurse(echo.Context) error
-	LoginNurse(echo.Context) error
-	SetPasswordNurse(echo.Context) error
-	UpdateNurse(echo.Context) error
-	DeleteNurse(echo.Context) error
-	GetListUser(echo.Context) error
-}
-
-type handler struct {
-	usecase Usecase
-	logger  *logrus.Logger
-}
-
-func NewHandler(usecase Usecase, logger *logrus.Logger) Handler {
-	return &handler{usecase, logger}
-}
 
 func (h *handler) RegisterIT(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := RegisterITRequest{}
+	request := input.RegisterITRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -48,7 +28,7 @@ func (h *handler) LoginIT(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := LoginRequest{}
+	request := input.LoginRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -62,7 +42,7 @@ func (h *handler) LoginNurse(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := LoginRequest{}
+	request := input.LoginRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -76,7 +56,7 @@ func (h *handler) RegisterNurse(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := RegisterNurseRequest{}
+	request := input.RegisterNurseRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -90,7 +70,7 @@ func (h *handler) SetPasswordNurse(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := NurseAccessRequest{}
+	request := input.NurseAccessRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -104,7 +84,7 @@ func (h *handler) UpdateNurse(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := UpdateNurseRequest{}
+	request := input.UpdateNurseRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -118,7 +98,7 @@ func (h *handler) DeleteNurse(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := DeleteNurseRequest{}
+	request := input.DeleteNurseRequest{}
 	err = pkg.BindValidate(c, &request)
 	if err != nil {
 		return helper.WriteResponse(c, helper.StandardResponse{Code: http.StatusBadRequest, Error: err})
@@ -132,7 +112,7 @@ func (h *handler) GetListUser(c echo.Context) (err error) {
 	ctx, cancel := helper.GetContext()
 	defer cancel()
 
-	request := GetListUserRequest{
+	request := input.GetListUserRequest{
 		ID:        c.QueryParam("userId"),
 		NIP:       c.QueryParam("nip"),
 		Name:      c.QueryParam("name"),

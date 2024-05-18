@@ -1,36 +1,16 @@
-package user
+package repository
 
 import (
 	"context"
 	"database/sql"
 	"time"
 
-	"github.com/backend-magang/halo-suster/config"
-	"github.com/backend-magang/halo-suster/models"
-	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
+	"github.com/backend-magang/halo-suster/models/entity"
+	"github.com/backend-magang/halo-suster/models/input"
+	"github.com/backend-magang/halo-suster/utils/helper"
 )
 
-type Repository interface {
-	Save(ctx context.Context, user models.User) (result models.User, err error)
-	FindUserByNIP(ctx context.Context, nip int64) (result models.User, err error)
-	FindUserByID(ctx context.Context, userId string) (result models.User, err error)
-	FindUsers(ctx context.Context, request GetListUserRequest) (result []models.User, err error)
-	UpdateUser(ctx context.Context, user models.User) (result models.User, err error)
-	DeleteUser(ctx context.Context, userId string) (err error)
-}
-
-type repository struct {
-	db     *sqlx.DB
-	config config.Config
-	logger *logrus.Logger
-}
-
-func NewRepository(db *sqlx.DB, config config.Config, logger *logrus.Logger) Repository {
-	return &repository{db, config, logger}
-}
-
-func (r *repository) Save(ctx context.Context, user models.User) (result models.User, err error) {
+func (r *repository) SaveUser(ctx context.Context, user entity.User) (result entity.User, err error) {
 	query := `INSERT INTO users (id, nip, name, role, password, identity_image_url, created_at, updated_at) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
         RETURNING *`
@@ -48,14 +28,14 @@ func (r *repository) Save(ctx context.Context, user models.User) (result models.
 	).StructScan(&result)
 
 	if err != nil {
-		r.logger.Errorf("[Repository][User][Save] failed to insert new user, err: %s", err.Error())
+		r.logger.Errorf("[Repository][User][SaveUser] failed to insert new user, err: %s", err.Error())
 		return
 	}
 
 	return
 }
 
-func (r *repository) FindUserByNIP(ctx context.Context, nip int64) (result models.User, err error) {
+func (r *repository) FindUserByNIP(ctx context.Context, nip int64) (result entity.User, err error) {
 	query := `SELECT * FROM users 
 		WHERE nip = $1 AND deleted_at IS NULL`
 
@@ -68,7 +48,7 @@ func (r *repository) FindUserByNIP(ctx context.Context, nip int64) (result model
 	return
 }
 
-func (r *repository) FindUserByID(ctx context.Context, userId string) (result models.User, err error) {
+func (r *repository) FindUserByID(ctx context.Context, userId string) (result entity.User, err error) {
 	query := `SELECT * FROM users 
 		WHERE id = $1 AND deleted_at IS NULL`
 
@@ -81,10 +61,10 @@ func (r *repository) FindUserByID(ctx context.Context, userId string) (result mo
 	return
 }
 
-func (r *repository) FindUsers(ctx context.Context, request GetListUserRequest) (result []models.User, err error) {
-	result = []models.User{}
+func (r *repository) FindUsers(ctx context.Context, request input.GetListUserRequest) (result []entity.User, err error) {
+	result = []entity.User{}
 
-	query, args := buildQueryGetListUser(request, "id", "nip", "name", "created_at")
+	query, args := helper.BuildQueryGetListUser(request, "id", "nip", "name", "created_at")
 	query = r.db.Rebind(query)
 
 	err = r.db.SelectContext(ctx, &result, query, args...)
@@ -96,7 +76,7 @@ func (r *repository) FindUsers(ctx context.Context, request GetListUserRequest) 
 	return result, err
 }
 
-func (r *repository) UpdateUser(ctx context.Context, user models.User) (result models.User, err error) {
+func (r *repository) UpdateUser(ctx context.Context, user entity.User) (result entity.User, err error) {
 	query := `UPDATE users SET 
 		nip = $1,
 		name = $2,
@@ -128,7 +108,7 @@ func (r *repository) UpdateUser(ctx context.Context, user models.User) (result m
 func (r *repository) DeleteUser(ctx context.Context, userId string) (err error) {
 	var (
 		now    = time.Now()
-		result models.User
+		result entity.User
 		args   = []interface{}{now, sql.NullTime{Time: now, Valid: true}, userId}
 	)
 

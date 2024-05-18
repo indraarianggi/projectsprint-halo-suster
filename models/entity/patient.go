@@ -1,4 +1,4 @@
-package models
+package entity
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 )
 
 type Patient struct {
-	ID               string    `json:"id" db:"id"`
+	ID               string    `json:"id,omitempty" db:"id"`
 	IdentityNumber   int64     `json:"identityNumber,omitempty" db:"identity_number"`
 	Name             string    `json:"name,omitempty" db:"name"`
 	PhoneNumber      string    `json:"phoneNumber,omitempty" db:"phone_number"`

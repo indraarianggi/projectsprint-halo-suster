@@ -1,4 +1,4 @@
-package user
+package input
 
 type RegisterITRequest struct {
 	NIP      int64  `json:"nip" validate:"required,nip=it"`

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/backend-magang/halo-suster/config"
-	"github.com/backend-magang/halo-suster/models"
+	"github.com/backend-magang/halo-suster/models/entity"
 	"github.com/backend-magang/halo-suster/utils/constant"
 	"github.com/backend-magang/halo-suster/utils/helper"
 	"github.com/golang-jwt/jwt/v4"
@@ -16,11 +16,13 @@ import (
 	"github.com/spf13/cast"
 )
 
+const userClaimKey = "authUser"
+
 func getJWTSecretKey() string {
 	return config.Load().JWTSecret
 }
 
-func GenerateToken(user models.User) (t string, err error) {
+func GenerateToken(user entity.User) (t string, err error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -52,7 +54,7 @@ func TokenValidation(args ...string) echo.MiddlewareFunc {
 				authorizedRole = args[0]
 			}
 
-			var userClaims = models.UserClaims{}
+			var userClaims = entity.UserClaims{}
 			requestAuthHeader := c.Request().Header.Get("Authorization")
 
 			if !strings.Contains(requestAuthHeader, "Bearer") {
@@ -111,8 +113,12 @@ func TokenValidation(args ...string) echo.MiddlewareFunc {
 				})
 			}
 
-			c.Set("user", userClaims)
+			c.Set(userClaimKey, userClaims)
 			return next(c)
 		}
 	}
+}
+
+func GetUserClaims(ctx echo.Context) entity.UserClaims {
+	return ctx.Get(userClaimKey).(entity.UserClaims)
 }

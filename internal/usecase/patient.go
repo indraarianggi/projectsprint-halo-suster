@@ -1,4 +1,4 @@
-package patient
+package usecase
 
 import (
 	"context"
@@ -6,34 +6,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/backend-magang/halo-suster/config"
-	"github.com/backend-magang/halo-suster/models"
+	"github.com/backend-magang/halo-suster/models/entity"
+	"github.com/backend-magang/halo-suster/models/input"
 	"github.com/backend-magang/halo-suster/utils/constant"
 	"github.com/backend-magang/halo-suster/utils/helper"
 	"github.com/backend-magang/halo-suster/utils/lib"
-	"github.com/sirupsen/logrus"
 )
 
-type Usecase interface {
-	AddPatient(context.Context, AddPatientRequest) helper.StandardResponse
-	GetListPatient(context.Context, GetListPatientRequest) helper.StandardResponse
-}
-
-type usecase struct {
-	repository Repository
-	config     config.Config
-	logger     *logrus.Logger
-}
-
-func NewUsecase(repository Repository, config config.Config, logger *logrus.Logger) Usecase {
-	return &usecase{repository, config, logger}
-}
-
-func (u *usecase) AddPatient(ctx context.Context, request AddPatientRequest) helper.StandardResponse {
+func (u *usecase) AddPatient(ctx context.Context, request input.AddPatientRequest) helper.StandardResponse {
 	var (
-		newPatient   models.Patient
-		patient      models.Patient
-		dataResponse models.Patient
+		newPatient   entity.Patient
+		patient      entity.Patient
+		dataResponse entity.Patient
 		err          error
 		now          = time.Now()
 	)
@@ -43,7 +27,7 @@ func (u *usecase) AddPatient(ctx context.Context, request AddPatientRequest) hel
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
 	}
 
-	newPatient = models.Patient{
+	newPatient = entity.Patient{
 		ID:               helper.NewULID(),
 		IdentityNumber:   request.IdentityNumber,
 		Name:             request.Name,
@@ -56,7 +40,7 @@ func (u *usecase) AddPatient(ctx context.Context, request AddPatientRequest) hel
 	}
 
 	// save new patient to database
-	patient, err = u.repository.Save(ctx, newPatient)
+	patient, err = u.repository.SavePatient(ctx, newPatient)
 	if err != nil {
 		if strings.Contains(err.Error(), lib.ErrConstraintKey.Error()) {
 			return helper.StandardResponse{Code: http.StatusConflict, Message: constant.DUPLICATE_IDENTITY_NUMBER, Error: err}
@@ -64,7 +48,7 @@ func (u *usecase) AddPatient(ctx context.Context, request AddPatientRequest) hel
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
 	}
 
-	dataResponse = models.Patient{
+	dataResponse = entity.Patient{
 		ID:               patient.ID,
 		IdentityNumber:   patient.IdentityNumber,
 		PhoneNumber:      patient.PhoneNumber,
@@ -78,9 +62,9 @@ func (u *usecase) AddPatient(ctx context.Context, request AddPatientRequest) hel
 	return helper.StandardResponse{Code: http.StatusCreated, Message: constant.SUCCESS_ADD_PATIENT, Data: dataResponse}
 }
 
-func (u *usecase) GetListPatient(ctx context.Context, request GetListPatientRequest) helper.StandardResponse {
+func (u *usecase) GetListPatient(ctx context.Context, request input.GetListPatientRequest) helper.StandardResponse {
 	var (
-		patients []models.Patient
+		patients []entity.Patient
 		err      error
 	)
 

@@ -1,4 +1,4 @@
-package patient
+package input
 
 type AddPatientRequest struct {
 	IdentityNumber   int64  `json:"identityNumber" validate:"required,numlen=16"`
