@@ -20,11 +20,12 @@ func main() {
 	logger := logrus.New()
 
 	dbClient := driver.InitPostgres(config)
+	s3Client := driver.InitS3Client(config)
 
 	middleware.InitMiddleware(server)
 
 	repository := repository.NewRepository(dbClient, config, logger)
-	usecase := usecase.NewUsecase(repository, config, logger)
+	usecase := usecase.NewUsecase(repository, s3Client, config, logger)
 	handler := handler.NewHandler(usecase, logger)
 
 	router.InitRouter(server, handler)

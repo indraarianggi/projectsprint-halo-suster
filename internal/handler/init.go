@@ -24,6 +24,9 @@ type Handler interface {
 	// Medical Record
 	AddMedicalRecord(echo.Context) error
 	GetListMedicalRecord(echo.Context) error
+
+	// Upload Image
+	UploadImage(c echo.Context) (err error)
 }
 
 type handler struct {

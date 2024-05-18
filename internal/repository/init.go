@@ -31,10 +31,14 @@ type Repository interface {
 
 type repository struct {
 	db     *sqlx.DB
-	config config.Config
 	logger *logrus.Logger
+	config config.Config
 }
 
 func NewRepository(db *sqlx.DB, config config.Config, logger *logrus.Logger) Repository {
-	return &repository{db, config, logger}
+	return &repository{
+		db,
+		logger,
+		config,
+	}
 }

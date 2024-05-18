@@ -21,4 +21,5 @@ const (
 	PATIENT_NOT_FOUND          = "patient not found"
 	FAILED_GET_PATIENTS        = "failed to get list of patients"
 	FAILED_GET_MEDICAL_RECORDS = "failed to get list of medical records"
+	SUCCESS_UPLOAD_FILE        = "file uploaded successfully"
 )
