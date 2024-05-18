@@ -34,8 +34,8 @@ func (r *repository) SaveMedicalRecord(ctx context.Context, medicalRecord entity
 	return
 }
 
-func (r *repository) FindMedicalRecords(ctx context.Context, request input.GetListMedicalRecordRequest) (result []entity.MedicalRecordResponse, err error) {
-	result = []entity.MedicalRecordResponse{}
+func (r *repository) FindMedicalRecords(ctx context.Context, request input.GetListMedicalRecordRequest) (result []entity.MedicalRecordResult, err error) {
+	result = []entity.MedicalRecordResult{}
 
 	query, args := helper.BuildQueryGetListMedicalRecord(request)
 	query = r.db.Rebind(query)

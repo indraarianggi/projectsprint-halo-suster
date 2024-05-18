@@ -66,9 +66,31 @@ func (u *usecase) GetListMedicalRecord(ctx context.Context, request input.GetLis
 		err            error
 	)
 
-	medicalRecords, err = u.repository.FindMedicalRecords(ctx, request)
+	result, err := u.repository.FindMedicalRecords(ctx, request)
 	if err != nil {
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED_GET_MEDICAL_RECORDS, Error: err}
+	}
+
+	for _, record := range result {
+		medicalRecords = append(medicalRecords, entity.MedicalRecordResponse{
+			ID: record.ID,
+			IdentityDetail: entity.Patient{
+				IdentityNumber:   record.PatientIdentityNumber,
+				PhoneNumber:      record.PatientPhoneNumber,
+				Name:             record.PatientName,
+				BirthDate:        record.PatientBirthDate,
+				Gender:           record.PatientGender,
+				IdentityImageUrl: record.PatientIdentityImageUrl,
+			},
+			Symptoms:    record.Symptoms,
+			Medications: record.Medications,
+			CreatedBy: entity.User{
+				ID:   record.CreatedByID,
+				NIP:  record.CreatedByNIP,
+				Name: record.CreatedByName,
+			},
+			CreatedAt: record.CreatedAt,
+		})
 	}
 
 	return helper.StandardResponse{Code: http.StatusOK, Message: constant.SUCCESS, Data: medicalRecords}

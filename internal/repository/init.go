@@ -26,7 +26,7 @@ type Repository interface {
 
 	// Medical Record
 	SaveMedicalRecord(ctx context.Context, medicalRecord entity.MedicalRecord) (result entity.MedicalRecord, err error)
-	FindMedicalRecords(ctx context.Context, request input.GetListMedicalRecordRequest) (result []entity.MedicalRecordResponse, err error)
+	FindMedicalRecords(ctx context.Context, request input.GetListMedicalRecordRequest) (result []entity.MedicalRecordResult, err error)
 }
 
 type repository struct {

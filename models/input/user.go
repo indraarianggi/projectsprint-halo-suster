@@ -35,7 +35,7 @@ type GetListUserRequest struct {
 
 type UpdateNurseRequest struct {
 	ID   string `param:"id" validate:"required"`
-	NIP  int64  `json:"nip" validate:"required,nip"`
+	NIP  int64  `json:"nip" validate:"required,nip=nurse"`
 	Name string `json:"name" validate:"required,min=5,max=50"`
 }
 

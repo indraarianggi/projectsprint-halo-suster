@@ -37,21 +37,31 @@ func (u MedicalRecord) MarshalJSON() ([]byte, error) {
 	return json.Marshal(aux)
 }
 
+type MedicalRecordResult struct {
+	ID                      string    `db:"medical_record_id"`
+	PatientIdentityNumber   int64     `db:"identity_number"`
+	PatientPhoneNumber      string    `db:"phone_number"`
+	PatientName             string    `db:"name"`
+	PatientBirthDate        time.Time `db:"birth_date"`
+	PatientGender           string    `db:"gender"`
+	PatientIdentityImageUrl string    `db:"identity_image_url"`
+	Symptoms                string    `db:"symptoms"`
+	Medications             string    `db:"medications"`
+	CreatedByID             string    `db:"created_by_id"`
+	CreatedByNIP            int64     `db:"created_by_nip"`
+	CreatedByName           string    `db:"created_by_name"`
+	CreatedAt               time.Time `db:"created_at"`
+	UpdatedAt               time.Time `db:"updated_at"`
+}
+
 type MedicalRecordResponse struct {
-	ID                      string    `json:"id,omitempty" db:"medical_record_id"`
-	PatientIdentityNumber   int64     `json:"identityDetail.identityNumber" db:"identity_number"`
-	PatientPhoneNumber      string    `json:"identityDetail.phoneNumber" db:"phone_number"`
-	PatientName             string    `json:"identityDetail.name" db:"name"`
-	PatientBirthDate        string    `json:"identityDetail.birthDate" db:"birth_date"`
-	PatientGender           string    `json:"identityDetail.gender" db:"gender"`
-	PatientIdentityImageUrl string    `json:"identityDetail.identityCardScanImg" db:"identity_image_url"`
-	Symptoms                string    `json:"symptoms,omitempty" db:"symptoms"`
-	Medications             string    `json:"medications,omitempty" db:"medications"`
-	CreatedByID             string    `json:"createdBy.userId" db:"created_by_id"`
-	CreatedByNIP            int64     `json:"createdBy.nip" db:"created_by_nip"`
-	CreatedByName           string    `json:"createdBy.name" db:"created_by_name"`
-	CreatedAt               time.Time `json:"createdAt,omitempty" db:"created_at"`
-	UpdatedAt               time.Time `json:"updatedAt,omitempty" db:"updated_at"`
+	ID             string    `json:"id,omitempty"`
+	IdentityDetail Patient   `json:"identityDetail"`
+	Symptoms       string    `json:"symptoms,omitempty"`
+	Medications    string    `json:"medications,omitempty"`
+	CreatedBy      User      `json:"createdBy"`
+	CreatedAt      time.Time `json:"createdAt,omitempty"`
+	UpdatedAt      time.Time `json:"updatedAt,omitempty"`
 }
 
 // makes "omitempty" in CreatedAt and UpdatedAt works

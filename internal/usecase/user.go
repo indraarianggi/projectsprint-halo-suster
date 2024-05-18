@@ -233,15 +233,6 @@ func (u *usecase) UpdateNurse(ctx context.Context, request input.UpdateNurseRequ
 		now          = time.Now()
 	)
 
-	// check request.NIP, must be 303 (nurse)
-	requestNIPStr := strconv.FormatInt(request.NIP, 10)
-	requestRoleCode, err := strconv.Atoi(requestNIPStr[:3])
-	if err != nil {
-		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
-	} else if requestRoleCode != constant.ROLE_CODE_NURSE {
-		return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.INVALID_NIP}
-	}
-
 	// find user by id
 	user, err = u.repository.FindUserByID(ctx, request.ID)
 	if err != nil {
