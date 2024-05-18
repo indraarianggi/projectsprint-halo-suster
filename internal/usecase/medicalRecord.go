@@ -25,7 +25,7 @@ func (u *usecase) AddMedicalRecord(ctx context.Context, request input.AddMedical
 	patient, err = u.repository.FindPatientByIdentityNumber(ctx, request.IdentityNumber)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return helper.StandardResponse{Code: http.StatusBadRequest, Message: constant.PATIENT_NOT_FOUND, Error: err}
+			return helper.StandardResponse{Code: http.StatusNotFound, Message: constant.PATIENT_NOT_FOUND, Error: err}
 		}
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED, Error: err}
 	}
