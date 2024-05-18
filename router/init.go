@@ -8,4 +8,5 @@ import (
 func InitRouter(server *echo.Echo, handler handler.Handler) {
 	InitUserRouter(server, handler)
 	InitMedicalRouter(server, handler)
+	InitUploadImageRouter(server, handler)
 }

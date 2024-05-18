@@ -20,10 +20,10 @@ type Config struct {
 	DBScehma     string `mapstructure:"DB_SCHEMA"`
 	JWTSecret    string `mapstructure:"JWT_SECRET"`
 	BcryptSalt   string `mapstructure:"BCRYPT_SALT"`
-	S3Id         string `mapstructure:"S3_ID"`
-	S3SecretKey  string `mapstructure:"S3_SECRET_KEY"`
-	S3BucketName string `mapstructure:"S3_BUCKET_NAME"`
-	S3Region     string `mapstructure:"S3_REGION"`
+	S3AccessKey  string `mapstructure:"AWS_ACCESS_KEY_ID"`
+	S3SecretKey  string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	S3BucketName string `mapstructure:"AWS_S3_BUCKET_NAME"`
+	S3Region     string `mapstructure:"AWS_REGION"`
 }
 
 func Load() (config Config) {
@@ -44,10 +44,10 @@ func Load() (config Config) {
 		DBScehma:     os.Getenv("DB_SCHEMA"),
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 		BcryptSalt:   os.Getenv("BCRYPT_SALT"),
-		S3Id:         os.Getenv("S3_ID"),
-		S3SecretKey:  os.Getenv("S3_SECRET_KEY"),
-		S3BucketName: os.Getenv("S3_BUCKET_NAME"),
-		S3Region:     os.Getenv("S3_REGION"),
+		S3AccessKey:  os.Getenv("AWS_ACCESS_KEY_ID"),
+		S3SecretKey:  os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		S3BucketName: os.Getenv("AWS_S3_BUCKET_NAME"),
+		S3Region:     os.Getenv("AWS_REGION"),
 	}
 
 	return
