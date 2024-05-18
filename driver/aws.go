@@ -2,7 +2,6 @@ package driver
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -12,8 +11,6 @@ import (
 
 func InitS3Client(conf privConf.Config) *s3.Client {
 	log.Println("[S3] initialized...")
-
-	fmt.Println(conf)
 
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),
