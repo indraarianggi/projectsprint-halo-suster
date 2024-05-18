@@ -1,6 +1,6 @@
 CREATE TABLE patients (
     id VARCHAR(26) PRIMARY KEY,
-    identity_number BIGINT,
+    identity_number BIGINT UNIQUE,
     name VARCHAR(30),
     phone_number VARCHAR(16),
     birth_date TIMESTAMP,

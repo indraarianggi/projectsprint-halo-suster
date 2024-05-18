@@ -133,7 +133,7 @@ func (h *handler) GetListUser(c echo.Context) (err error) {
 	defer cancel()
 
 	request := GetListUserRequest{
-		ID:        c.QueryParam("id"),
+		ID:        c.QueryParam("userId"),
 		NIP:       c.QueryParam("nip"),
 		Name:      c.QueryParam("name"),
 		Role:      c.QueryParam("role"),

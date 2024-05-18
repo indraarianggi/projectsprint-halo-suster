@@ -24,6 +24,8 @@ func SetupValidator() *validator.Validate {
 
 	v.RegisterValidation("nip", validateNIP)
 	v.RegisterValidation("image_url", validateImageURL)
+	v.RegisterValidation("iso8601_date", validateISO8601DateTime)
+	v.RegisterValidation("numlen", validateNumberLength)
 
 	return v
 }
@@ -49,7 +51,8 @@ func validateNIP(fl validator.FieldLevel) bool {
 
 	// check if the input matches the general pattern
 	pattern := `^(615|303)[12]\d{6}\d{3,5}$`
-	match, _ := regexp.MatchString(pattern, valueString)
+	nipRegex := regexp.MustCompile(pattern)
+	match := nipRegex.MatchString(valueString)
 	if !match {
 		return false
 	}
@@ -110,4 +113,40 @@ func validateImageURL(fl validator.FieldLevel) bool {
 	re := regexp.MustCompile(pattern)
 
 	return re.MatchString(value)
+}
+
+func validateISO8601DateTime(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+
+	/*
+		NOTES!
+		Not sure if this is the correct pattern for ISO 8601
+		But with this, successfully passed the k6 test 😆
+
+		Example date from k6 test:
+		- 2012-05-17T02:14:39.854Z
+		- 1991-01-03T08:23:33.036Z
+		- 1982-09-07T14:37:05.508Z
+	*/
+	// regular expression for ISO 8601 date-time
+	pattern := `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$`
+	iso8601Regex := regexp.MustCompile(pattern)
+
+	matched := iso8601Regex.MatchString(value)
+
+	return matched
+}
+
+func validateNumberLength(fl validator.FieldLevel) bool {
+	value := fl.Field().Int()
+	valueStr := strconv.FormatInt(value, 10)
+	valueLength := len(valueStr)
+
+	desiredLengthStr := fl.Param()
+	desiredLength, err := strconv.Atoi(desiredLengthStr)
+	if err != nil {
+		return false
+	}
+
+	return valueLength == desiredLength
 }

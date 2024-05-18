@@ -15,7 +15,7 @@ type Repository interface {
 	Save(ctx context.Context, user models.User) (result models.User, err error)
 	FindUserByNIP(ctx context.Context, nip int64) (result models.User, err error)
 	FindUserByID(ctx context.Context, userId string) (result models.User, err error)
-	FindUser(ctx context.Context, request GetListUserRequest) (result []models.User, err error)
+	FindUsers(ctx context.Context, request GetListUserRequest) (result []models.User, err error)
 	UpdateUser(ctx context.Context, user models.User) (result models.User, err error)
 	DeleteUser(ctx context.Context, userId string) (err error)
 }
@@ -81,15 +81,15 @@ func (r *repository) FindUserByID(ctx context.Context, userId string) (result mo
 	return
 }
 
-func (r *repository) FindUser(ctx context.Context, request GetListUserRequest) ([]models.User, error) {
-	result := []models.User{}
+func (r *repository) FindUsers(ctx context.Context, request GetListUserRequest) (result []models.User, err error) {
+	result = []models.User{}
 
 	query, args := buildQueryGetListUser(request, "id", "nip", "name", "created_at")
 	query = r.db.Rebind(query)
 
-	err := r.db.SelectContext(ctx, &result, query, args...)
+	err = r.db.SelectContext(ctx, &result, query, args...)
 	if err != nil {
-		r.logger.Errorf("[Repository][User][FindUser] failed to query, err: %s", err.Error())
+		r.logger.Errorf("[Repository][User][FindUsers] failed to query, err: %s", err.Error())
 		return result, err
 	}
 

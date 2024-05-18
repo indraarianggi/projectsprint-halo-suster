@@ -350,7 +350,7 @@ func (u *usecase) GetListUser(ctx context.Context, request GetListUserRequest) h
 		err   error
 	)
 
-	users, err = u.repository.FindUser(ctx, request)
+	users, err = u.repository.FindUsers(ctx, request)
 	if err != nil {
 		return helper.StandardResponse{Code: http.StatusInternalServerError, Message: constant.FAILED_GET_USERS, Error: err}
 	}

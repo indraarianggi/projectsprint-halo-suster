@@ -4,6 +4,7 @@ import (
 	"github.com/backend-magang/halo-suster/config"
 	"github.com/backend-magang/halo-suster/driver"
 	"github.com/backend-magang/halo-suster/middleware"
+	"github.com/backend-magang/halo-suster/patient"
 	"github.com/backend-magang/halo-suster/router"
 	"github.com/backend-magang/halo-suster/user"
 	"github.com/labstack/echo/v4"
@@ -25,7 +26,14 @@ func main() {
 	userUsecase := user.NewUsecase(userRepository, config, logger)
 	userHandler := user.NewHandler(userUsecase, logger)
 
-	router.InitRouter(server, router.RouterHandler{UserHandler: userHandler})
+	patientRepository := patient.NewRepository(dbClient, config, logger)
+	patientUsecase := patient.NewUsecase(patientRepository, config, logger)
+	patientHandler := patient.NewHandler(patientUsecase, logger)
+
+	router.InitRouter(server, router.RouterHandler{
+		UserHandler:    userHandler,
+		PatientHandler: patientHandler,
+	})
 
 	server.Start(":8080")
 }
