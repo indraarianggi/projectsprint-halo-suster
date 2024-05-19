@@ -2,10 +2,9 @@ package config
 
 import (
 	"fmt"
-	"log"
+	// "log"
 	"os"
-
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -27,10 +26,10 @@ type Config struct {
 }
 
 func Load() (config Config) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file, error:", err.Error())
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Println("Error loading .env file, error:", err.Error())
+	// }
 
 	config = Config{
 		AppHost:      os.Getenv("APP_HOST"),
