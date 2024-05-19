@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"io"
 	"mime/multipart"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -33,7 +32,7 @@ type Usecase interface {
 	GetListMedicalRecord(context.Context, input.GetListMedicalRecordRequest) helper.StandardResponse
 
 	// Upload Image
-	UploadImage(ctx context.Context, file io.Reader, fileHeader *multipart.FileHeader) helper.StandardResponse
+	UploadImage(ctx context.Context, fileHeader *multipart.FileHeader) helper.StandardResponse
 }
 
 type usecase struct {
